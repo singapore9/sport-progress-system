@@ -10,3 +10,6 @@ run:
 # don't forget to remove orjson library from requirements.txt
 freeze:
 	source ./.venv/bin/activate && pip list --format=freeze > requirements.txt
+
+uvicorn:
+	source ./.venv/bin/activate && uvicorn main:app --host 0.0.0.0
