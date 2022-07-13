@@ -1,3 +1,5 @@
+ALLOWED_HOSTS = []
+
 FIREBASE_CERTIFICATE = {
     "type": "xxx",
     "project_id": "xxx",
