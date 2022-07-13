@@ -3,12 +3,14 @@ from typing import Optional
 from fastapi import Request, APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from firebase_admin import db
+
+from firebase import (
+    default_app, BASE_PATH, WORKOUT_ITEMS_PATH, WORKOUT_ITEMS_NEXT_ID_PATH, WORKOUT_ITEMS_KEY, WORKOUT_ITEMS_NEXT_ID_KEY
+)
 
 
 router = APIRouter(prefix="/workout-item")
-
-x = []
-pk = 0
 
 
 class WorkoutItem(BaseModel):
@@ -20,42 +22,62 @@ class WorkoutItem(BaseModel):
 
 @router.get("/", response_class=JSONResponse)
 async def list(request: Request):
-    return JSONResponse(content={"list": [item.dict() for item in x]})
+    ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
+    result: dict = ref.get()
+    return JSONResponse(content={"list": [item for item in result.values()]})
 
 
 @router.post("/", response_class=JSONResponse)
 async def post(request: Request, workout_item: WorkoutItem):
-    global pk
-    pk = pk + 1
-    workout_item.pk = pk
-    x.append(workout_item)
+    ref = db.reference(WORKOUT_ITEMS_NEXT_ID_PATH, default_app)
+    nextid: int = ref.get()
+    item = {f"id{nextid}": workout_item.dict()}
+
+    ref = db.reference(BASE_PATH, default_app)
+    ref.update({WORKOUT_ITEMS_NEXT_ID_KEY: nextid + 1})
+
+    ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
+    items: dict = ref.get()
+    items.update(item)
+    ref.update(items)
     return JSONResponse(content={"status": "ok"})
 
 
 @router.get("/{item_id}", response_class=JSONResponse)
 async def get(request: Request, item_id: int):
-    item = [i for i in x if i.pk == item_id]
-    item = item[0].dict() if item else None
-    return JSONResponse(content={"item": item})
+    ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
+    items: dict = ref.get()
+
+    result_item = None
+    for _id, item in items.items():
+        if item['pk'] == item_id:
+            result_item = item
+            break
+    return JSONResponse(content={"item": result_item})
 
 
 @router.delete("/{item_id}", response_class=JSONResponse)
 async def delete(request: Request, item_id: int):
-    global x
-    xx = [i for i in x if i.pk != item_id]
-    x = xx
+    ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
+    items: dict = ref.get()
+
+    updated_items = {key: item for key, item in items.items() if item['pk'] != item_id}
+    ref = db.reference(BASE_PATH, default_app)
+    ref.update({WORKOUT_ITEMS_KEY: updated_items})
     return JSONResponse(content={"status": "ok"})
 
 
 @router.post("/{item_id}", response_class=JSONResponse)
 async def update(request: Request, item_id: int, workout_item: WorkoutItem):
-    workout_item.pk = item_id
-    global x
-    xx = []
-    for i in x:
-        if i.pk != item_id:
-            xx.append(i)
+    ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
+    items: dict = ref.get()
+
+    updated_items = {}
+    for _id, item in items.items():
+        if item['pk'] != item_id:
+            updated_items[_id] = item
         else:
-            xx.append(workout_item)
-    x = xx
+            workout_item.pk = item_id
+            updated_items[_id] = workout_item.dict()
+    ref.update(updated_items)
     return JSONResponse(content={"status": "ok"})
