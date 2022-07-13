@@ -24,13 +24,14 @@ class WorkoutItem(BaseModel):
 async def list(request: Request):
     ref = db.reference(WORKOUT_ITEMS_PATH, default_app)
     result: dict = ref.get()
-    return JSONResponse(content={"list": [item for item in result.values()]})
+    return JSONResponse(content={"list": [item for item in sorted(result.values(), key=lambda x: x['pk'])]})
 
 
 @router.post("/", response_class=JSONResponse)
 async def post(request: Request, workout_item: WorkoutItem):
     ref = db.reference(WORKOUT_ITEMS_NEXT_ID_PATH, default_app)
     nextid: int = ref.get()
+    workout_item.pk = nextid
     item = {f"id{nextid}": workout_item.dict()}
 
     ref = db.reference(BASE_PATH, default_app)
