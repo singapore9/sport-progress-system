@@ -21,12 +21,17 @@ app.include_router(api_router)
 
 templates = Jinja2Templates(directory="templates/")
 
-favicon_path = 'templates/logo.png'
+ALLOWED_STATIC_FILES = [
+    'logo.png',
+    'chartBuilder.js'
+]
 
 
-@app.get('/logo.png', include_in_schema=False)
-async def favicon():
-    return FileResponse(favicon_path)
+@app.get('/static/{filepath}', include_in_schema=False)
+async def get_file(filepath: str):
+    if filepath in ALLOWED_STATIC_FILES:
+        return FileResponse(f'templates/{filepath}')
+    return None
 
 
 @app.get('/')
