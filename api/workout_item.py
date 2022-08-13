@@ -19,6 +19,7 @@ class WorkoutItem(BaseModel):
     iterations_count: int
     pause_before_item: int
     timestamp: int
+    user_id: str
 
 
 @router.get("/", response_class=JSONResponse)
