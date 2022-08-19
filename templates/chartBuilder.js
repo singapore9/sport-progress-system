@@ -2,6 +2,8 @@ window.onload = function() {
     var rawWorkoutItems = [];
     var workoutsByName = {};
     var workoutsNames = [];
+    var monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
 
     $.getJSON("/api/workout-item", function(data) {
         $.each(data, function(key, val) {
@@ -11,10 +13,15 @@ window.onload = function() {
                 var workoutName = valItem["name"];
                 console.log(workoutName);
                 if (workoutsByName.hasOwnProperty(workoutName)) {
-                    workoutsByName[workoutName].push(valItem["iterations_count"]);
+                    workoutsByName[workoutName].push([
+                        valItem["iterations_count"],
+                        valItem["timestamp"]
+                    ]);
                     console.log("add iterations_count");
                 } else {
-                    workoutsByName[workoutName] = [valItem["iterations_count"]];
+                    workoutsByName[workoutName] = [
+                        [valItem["iterations_count"], valItem["timestamp"]]
+                    ];
                     workoutsNames.push(workoutName);
                     console.log("add workout name + iterations_count");
                 }
@@ -23,7 +30,7 @@ window.onload = function() {
 
         var axisYConfigs = [];
         var dataConfigs = [];
-        var colors = ["#369EAD", "#C24642", "#7F6084"]
+        var colors = ["#369EAD", "#C24642", "#7F6084"];
         workoutsNames.forEach(function(item, ind) {
             var newColor = colors[ind % 3];
 
@@ -38,11 +45,15 @@ window.onload = function() {
 
             var specifiedExerciseData = [];
             workoutsByName[item].forEach(function(workoutItem, workoutInd) {
-                specifiedExerciseData.push({
-                    x: workoutInd,
-                    y: workoutItem
-                });
+                var itemDate = new Date(1000 * workoutItem[1]);
+                if (itemDate > monthAgo) {
+                    specifiedExerciseData.push({
+                        x: itemDate,
+                        y: workoutItem[0]
+                    });
+                }
             });
+            specifiedExerciseData.sort((a, b) => a['x'] - b['x']);
             dataConfigs.push({
                 type: "line",
                 name: item,
@@ -55,6 +66,7 @@ window.onload = function() {
 
         console.log(workoutsByName);
         console.log(workoutsNames);
+        console.log(dataConfigs);
 
         var chart = new CanvasJS.Chart("chartContainer", {
             title: {
