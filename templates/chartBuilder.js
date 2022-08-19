@@ -4,10 +4,14 @@ window.onload = function() {
     var workoutsNames = [];
     var monthAgo = new Date();
     monthAgo.setMonth(monthAgo.getMonth() - 1);
+    var userFilter = location.search.slice(1);
 
     $.getJSON("/api/workout-item", function(data) {
         $.each(data, function(key, val) {
             val.forEach(function(valItem) {
+                if (valItem['user_id'] !== userFilter) {
+                    return;
+                }
                 console.log(valItem);
                 rawWorkoutItems.push(valItem);
                 var workoutName = valItem["name"];
