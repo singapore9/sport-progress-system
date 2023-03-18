@@ -1,0 +1,47 @@
+---
+- ping: ~
+
+- name: Install GIT
+  yum:
+    name: "git"
+    state: latest
+
+- name: Create REPOS directory
+  file:
+    path: "{{dest_base_path}}"
+    state: directory
+
+- name: Clone the repo
+  git:
+    accept_newhostkey: true
+    key_file: "{{git_repo_key_path}}"
+    repo: "{{git_repo_path}}"
+    dest: "{{dest_base_path}}/{{dest_repo_dir}}"
+    version: "{{git_repo_branch}}"
+
+- name: Generate constants from vars
+  template:
+    src: constants.py.j2
+    dest: "{{dest_base_path}}/{{dest_repo_dir}}/constants.py"
+  tags:
+    - test
+
+- name: Install DOCKER
+  yum:
+    name: "docker"
+    state: latest
+
+- name: Get current container
+  shell: "docker ps -q -f ancestor={{container_name}}"
+  register: container_id
+
+- name: Docker build
+  shell: "docker build -t {{container_name}} {{dest_base_path}}/{{dest_repo_dir}}"
+
+- name: Docker stop
+  shell: "docker stop {{container_id.stdout}}"
+  when: container_id.stdout != ""
+
+- name: Docker run
+  shell: "docker run -d -p {{port_to_container}}:8000 -it {{container_name}} /bin/bash -c 'make uvicorn'"
+
