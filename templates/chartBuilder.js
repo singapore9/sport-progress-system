@@ -177,8 +177,8 @@ window.onload = function() {
     monthAgo.setMonth(monthAgo.getMonth() - 1);
     let userFilter = location.search.slice(1);
     let filteredWorkoutItems = [];
-
-    $.getJSON("/api/workout-item", function(data) {
+    // TODO: use env file and import values from it
+    $.getJSON("https://sport.iamprofessional.dev/api/workout-item", function(data) {
         $.each(data, function(key, val) {
             val.forEach(function(valItem) {
                 if (valItem['user_id'] !== userFilter) {
