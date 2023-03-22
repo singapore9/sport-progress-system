@@ -1,0 +1,6 @@
+ALLOWED_HOSTS = [
+    "{{ constants_allowed_hosts|join('\",\n    \"') }}"
+]
+
+FIREBASE_CERTIFICATE = {{ constants_firebase_certificate }}
+DATABASE_URL = "{{ constants_firebase_database_url }}"

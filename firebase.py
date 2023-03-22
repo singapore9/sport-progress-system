@@ -4,6 +4,7 @@ from constants import DATABASE_URL, FIREBASE_CERTIFICATE
 
 EXERCISES_NEXT_ID_KEY = "exercises_nextid"
 EXERCISES_KEY = "exercises"
+EXERCISES_TRANSLATION_KEY = "exercises_translations"
 WORKOUT_ITEMS_NEXT_ID_KEY = "workoutitems_nextid"
 WORKOUT_ITEMS_KEY = "workoutitems"
 
