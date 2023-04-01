@@ -178,7 +178,7 @@ window.onload = function() {
     let userFilter = location.search.slice(1);
     let filteredWorkoutItems = [];
     // TODO: use env file and import values from it
-    $.getJSON("https://sport.iamprofessional.dev/api/workout-item", function(data) {
+    $.getJSON("http://sport.iamprofessional.dev/api/workout-item", function(data) {
         $.each(data, function(key, val) {
             val.forEach(function(valItem) {
                 if (valItem['user_id'] !== userFilter) {
