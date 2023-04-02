@@ -7,7 +7,6 @@ run:
 	docker build -t testcontainer .
 	docker run -p 8000:8000 -it testcontainer /bin/bash
 
-# don't forget to remove orjson library from requirements.txt
 freeze:
 	source ./.venv/bin/activate && pip list --format=freeze > requirements.txt
 
